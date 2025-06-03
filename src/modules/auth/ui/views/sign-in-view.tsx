@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { OctagonAlertIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { authClient } from "@/lib/auth-client";
+import { FaGoogle } from "react-icons/fa";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,10 +20,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { on } from "events";
-import { set } from "date-fns";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -50,6 +49,7 @@ export const SignInView = () => {
       {
         email: data.email,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: () => {
@@ -58,6 +58,26 @@ export const SignInView = () => {
         },
         onError: (error) => {
           setError(error.message || "Invalid Email or Password");
+        },
+      }
+    );
+  };
+
+  const onSocial = (provider: "google") => {
+    setError(null);
+    setPending(true);
+
+    authClient.signIn.social(
+      {
+        provider: provider,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
+        },
+        onError: (error) => {
+          setError(error.message || "Provider Not Found");
         },
       }
     );
@@ -126,22 +146,15 @@ export const SignInView = () => {
                     Or continue with
                   </span>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button type="button" variant="outline" className="w-full">
-                    {/* <img
-                      src="/google.svg"
-                      alt="Google"
-                      className="h-4 w-4 mr-2"
-                    /> */}
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => onSocial("google")}
+                  >
+                    <FaGoogle className="mr-2 h-4 w-4" />
                     Google
-                  </Button>
-                  <Button type="button" variant="outline" className="w-full">
-                    {/* <img
-                      src="/github.svg"
-                      alt="GitHub"
-                      className="h-4 w-4 mr-2"
-                    /> */}
-                    GitHub
                   </Button>
                 </div>
                 <div className="text-center text-sm">
